@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Space+Grotesk:wght@500;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0a0a0a;
+    overflow: hidden;
+    height: 100%;
+  }
+
+  .ticker-wrap {
+    width: 100%;
+    overflow: hidden;
+    background: linear-gradient(90deg, #0a0a0a 0%, #111 50%, #0a0a0a 100%);
+    border-top: 1px solid rgba(0, 255, 255, 0.15);
+    border-bottom: 1px solid rgba(0, 255, 255, 0.15);
+    padding: 14px 0;
+    position: relative;
+  }
+
+  .ticker-wrap::before,
+  .ticker-wrap::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 80px;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .ticker-wrap::before {
+    left: 0;
+    background: linear-gradient(90deg, #0a0a0a, transparent);
+  }
+
+  .ticker-wrap::after {
+    right: 0;
+    background: linear-gradient(270deg, #0a0a0a, transparent);
+  }
+
+  .ticker {
+    display: flex;
+    white-space: nowrap;
+    animation: scroll 28s linear infinite;
+  }
+
+  @keyframes scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  .ticker-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 40px;
+    flex-shrink: 0;
+  }
+
+  .event-name {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: #fff;
+  }
+
+  .separator {
+    color: rgba(0, 255, 255, 0.4);
+    font-size: 8px;
+  }
+
+  .countdown-unit {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 3px;
+  }
+
+  .countdown-value {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 18px;
+    color: #00ffff;
+    text-shadow: 0 0 12px rgba(0, 255, 255, 0.5);
+    min-width: 28px;
+    text-align: right;
+  }
+
+  .countdown-label {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 500;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: rgba(255, 255, 255, 0.45);
+  }
+
+  .divider {
+    color: rgba(255, 0, 255, 0.6);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 14px;
+    padding: 0 2px;
+  }
+
+  .cta {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #ff00ff;
+    text-shadow: 0 0 10px rgba(255, 0, 255, 0.4);
+  }
+
+  .dot {
+    width: 4px;
+    height: 4px;
+    background: #ffff00;
+    border-radius: 50%;
+    box-shadow: 0 0 6px rgba(255, 255, 0, 0.6);
+    flex-shrink: 0;
+  }
+
+  .btn {
+    display: inline-block;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-decoration: none;
+    padding: 6px 14px;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+
+  .btn-info {
+    color: #00ffff;
+    border: 1px solid rgba(0, 255, 255, 0.5);
+    background: rgba(0, 255, 255, 0.08);
+  }
+
+  .btn-info:hover {
+    background: rgba(0, 255, 255, 0.2);
+    box-shadow: 0 0 12px rgba(0, 255, 255, 0.3);
+  }
+
+  .btn-tickets {
+    color: #0a0a0a;
+    border: 1px solid #ff00ff;
+    background: #ff00ff;
+    box-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
+  }
+
+  .btn-tickets:hover {
+    background: #ff33ff;
+    box-shadow: 0 0 18px rgba(255, 0, 255, 0.5);
+  }
+</style>
+</head>
+<body>
+
+<div class="ticker-wrap">
+  <div class="ticker" id="ticker"></div>
+</div>
+
+<script>
+  const EVENT_DATE = new Date('2026-09-03T18:00:00+01:00');
+  const EVENT_NAME = 'RUN THE WHARF';
+  const EVENT_DATE_LABEL = '3 SEP 2026';
+
+  function getCountdown() {
+    const now = new Date();
+    const diff = EVENT_DATE - now;
+
+    if (diff <= 0) {
+      return { days: 0, hours: 0, mins: 0, secs: 0 };
+    }
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+    return { days, hours, mins, secs };
+  }
+
+  function buildTickerItem() {
+    const { days, hours, mins, secs } = getCountdown();
+    return `
+      <div class="ticker-item">
+        <span class="dot"></span>
+        <span class="event-name">${EVENT_NAME}</span>
+        <a href="https://www.letsdothis.com/gb/checkout/ticket?eventId=248572&occurrenceId=21111161678&utm_source=website&utm_medium=organic&utm_campaign=general-ticket-selection&utm_organiser_id=171180" target="_blank" class="btn btn-tickets">Join The Movement</a>
+        <span class="separator">|</span>
+        <span class="countdown-unit">
+          <span class="countdown-value cd-days">${days}</span>
+          <span class="countdown-label">days</span>
+        </span>
+        <span class="divider">:</span>
+        <span class="countdown-unit">
+          <span class="countdown-value cd-hours">${String(hours).padStart(2,'0')}</span>
+          <span class="countdown-label">hrs</span>
+        </span>
+        <span class="divider">:</span>
+        <span class="countdown-unit">
+          <span class="countdown-value cd-mins">${String(mins).padStart(2,'0')}</span>
+          <span class="countdown-label">min</span>
+        </span>
+        <span class="divider">:</span>
+        <span class="countdown-unit">
+          <span class="countdown-value cd-secs">${String(secs).padStart(2,'0')}</span>
+          <span class="countdown-label">sec</span>
+        </span>
+        <span class="separator">|</span>
+        <span class="cta">${EVENT_DATE_LABEL}</span>
+        <span class="separator">|</span>
+        <a href="https://www.letsdothis.com/gb/e/248572?eventId=248572&occurrenceId=21111161678&preferred=true&utm_source=website&utm_medium=organic&utm_campaign=general-event-page&utm_organiser_id=171180" target="_blank" class="btn btn-info">The Lowdown</a>
+        <a href="https://www.letsdothis.com/gb/checkout/ticket?eventId=248572&occurrenceId=21111161678&utm_source=website&utm_medium=organic&utm_campaign=general-ticket-selection&utm_organiser_id=171180" target="_blank" class="btn btn-tickets">Join The Movement</a>
+        <span class="dot"></span>
+      </div>
+    `;
+  }
+
+  function initTicker() {
+    const ticker = document.getElementById('ticker');
+    // Repeat enough times to fill and loop seamlessly
+    const item = buildTickerItem();
+    ticker.innerHTML = item.repeat(8);
+  }
+
+  function updateCountdown() {
+    const { days, hours, mins, secs } = getCountdown();
+    document.querySelectorAll('.cd-days').forEach(el => el.textContent = days);
+    document.querySelectorAll('.cd-hours').forEach(el => el.textContent = String(hours).padStart(2,'0'));
+    document.querySelectorAll('.cd-mins').forEach(el => el.textContent = String(mins).padStart(2,'0'));
+    document.querySelectorAll('.cd-secs').forEach(el => el.textContent = String(secs).padStart(2,'0'));
+  }
+
+  initTicker();
+  setInterval(updateCountdown, 1000);
+</script>
+
+</body>
+</html>
